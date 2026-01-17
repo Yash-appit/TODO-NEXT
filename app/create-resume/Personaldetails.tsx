@@ -600,7 +600,7 @@ const Personaldetails: React.FC<PersonaldetailsProps> = ({ setResumeData, Genera
                 <Image src={prof} alt="Default profile" width={150} height={150} />
               ) : (
                 <>
-                  <Image
+                  <img
                     src={ResumeImage}
                     alt="Profile"
                     className="mt-2"
@@ -627,14 +627,12 @@ const Personaldetails: React.FC<PersonaldetailsProps> = ({ setResumeData, Genera
                 </>
               )}
 
-              <div className='position-relative'>
-                <label className='btn btn-primary'>
-                  {isUploading ? (
-                    <Spinner animation="border" size="sm" />
-                  ) : (
-                    "Upload Avatar"
-                  )}
-                </label>
+              <label className='btn btn-primary' style={{ cursor: isUploading ? 'not-allowed' : 'pointer' }}>
+                {isUploading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  "Upload Avatar"
+                )}
                 <input
                   type="file"
                   accept="image/*"
@@ -642,16 +640,10 @@ const Personaldetails: React.FC<PersonaldetailsProps> = ({ setResumeData, Genera
                   disabled={isUploading}
                   ref={fileInputRef}
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    opacity: 0,
-                    cursor: 'pointer'
+                    display: 'none'
                   }}
                 />
-              </div>
+              </label>
             </div>
           </div>
 
