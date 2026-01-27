@@ -23,7 +23,7 @@ const getFromLocalStorage = (key: string) => {
 };
 const FeaturesDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false);
-  // const dropdownRef = useRef(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const [token, setToken] = useState(getFromLocalStorage('token'));

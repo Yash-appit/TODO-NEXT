@@ -28,24 +28,24 @@ function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const router = useRouter();
-  
+
   // Initialize windowWidth with 0 for server-side rendering
   const [windowWidth, setWindowWidth] = useState(0);
-  
+
   const getFromLocalStorage = (key: string) => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem(key);
     }
     return null;
   };
-  
+
   const dashboardData = getFromLocalStorage('package');
   const { dashboard, fetchDashboard } = useDashboard();
-  
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-  
+
   const { snackbar } = useFCMToken();
 
   // Handle clicks outside the dropdown
@@ -74,7 +74,7 @@ function Header() {
   const { refresh } = useRefresh();
 
   const expand = "lg";
-  
+
   const handleScroll = () => {
     const position = window.pageYOffset;
     setScrollPosition(position);
@@ -120,7 +120,7 @@ function Header() {
       if (resume_id) {
         addResume({ resume_id, ...resume_data })
           .then((response) => {
-            console.log('Resume updated successfully:');
+
           })
           .catch((error) => {
             console.error('Error updating resume:', error);
@@ -128,7 +128,7 @@ function Header() {
       } else {
         addResume(resume_data)
           .then((response) => {
-            console.log('Resume created successfully:');
+
           })
           .catch((error) => {
             console.error('Error creating resume:', error);
@@ -143,7 +143,7 @@ function Header() {
   useEffect(() => {
     // Set initial window width after component mounts (client-side)
     setWindowWidth(typeof window !== 'undefined' ? window.innerWidth : 0);
-    
+
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
@@ -173,14 +173,14 @@ function Header() {
     localStorage.removeItem('resumeId');
     localStorage.removeItem('GuestData');
     localStorage.removeItem('resumeData');
-    
+
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.removeItem('templateId');
       sessionStorage.removeItem('selectedTemplateId');
       sessionStorage.removeItem('ResumeId');
       sessionStorage.removeItem('GuestId');
     }
-    
+
     localStorage.removeItem("resumeName");
     window.location.href = '/';
   };
@@ -191,7 +191,7 @@ function Header() {
     const storedName = getFromLocalStorage('name');
     setToken(storedToken);
     setName(storedName);
-    
+
     if (!dashboardData && storedToken) {
       fetchDashboard();
     }
@@ -204,7 +204,7 @@ function Header() {
 
   return (
     <>
-      {/* {snackbar} */}
+
       <Navbar expand="lg" className='nav-bg'>
         <Container fluid className='p-0'>
           <Row className='m-0 d-flex justify-content-between align-items-center w-100'>
@@ -214,9 +214,9 @@ function Header() {
 
             <div className='d-flex align-items-center w-auto'>
               {windowWidth < 990 && !token && (
-                <NavDropdown 
-                  title={<FaUserPlus />} 
-                  id="mobile-auth-dropdown" 
+                <NavDropdown
+                  title={<FaUserPlus />}
+                  id="mobile-auth-dropdown"
                   className='mobile-auth-dropdown p-2'
                 >
                   <NavDropdown.Item onClick={openLoginModal}>Login</NavDropdown.Item>
@@ -225,9 +225,9 @@ function Header() {
               )}
 
               {windowWidth < 990 && token && (
-                <NavDropdown 
-                  title={<Image src={prof} alt="Profile" />} 
-                  id="mobile-auth-dropdown" 
+                <NavDropdown
+                  title={<Image src={prof} alt="Profile" />}
+                  id="mobile-auth-dropdown"
                   className='mobile-auth-dropdown p-2 border-0'
                 >
                   <NavDropdown.Item href='/resumes'>Dashboard</NavDropdown.Item>
@@ -235,15 +235,15 @@ function Header() {
                 </NavDropdown>
               )}
 
-              <Navbar.Toggle 
+              <Navbar.Toggle
                 onClick={() => setShowOffcanvas(true)}
-                aria-controls="offcanvasNavbar" 
+                aria-controls="offcanvasNavbar"
                 className='w-auto'
               >
                 <MdOutlineSegment className='fs-1 text-white' />
               </Navbar.Toggle>
             </div>
-            
+
             <Navbar.Offcanvas
               id="offcanvasNavbar"
               show={showOffcanvas}
@@ -264,7 +264,7 @@ function Header() {
                   <IoCloseCircleOutline />
                 </button>
               </Offcanvas.Header>
-              
+
               <Offcanvas.Body className="off-campus-body">
                 <Nav
                   className={`justify-content-center align-items-baseline flex-grow-1 pe-3 ${getGapClass()}`}
@@ -319,10 +319,10 @@ function Header() {
           </Row>
         </Container>
 
-        <CustomModal 
-          show={isLogoutOpen} 
-          onHide={() => setLogoutOpen(false)} 
-          custom='logout' 
+        <CustomModal
+          show={isLogoutOpen}
+          onHide={() => setLogoutOpen(false)}
+          custom='logout'
           title="Logout"
         >
           <Image src={out} alt="logout" />

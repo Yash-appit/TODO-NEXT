@@ -101,7 +101,7 @@ const Faq: React.FC = () => {
                           }
                         }}
                       >
-                        {/* Removed the Box inside Typography */}
+
                         <Typography sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
                           <FiPlus />
                           {faqItem.question}
@@ -128,15 +128,15 @@ const Faq: React.FC = () => {
                 </div>
 
                 <div className='my-1'>
-                  <Link 
-                    href="/contact" 
+                  <Link
+                    href="/contact"
                     onClick={() => {
                       trackEvent({
                         category: 'Contact',
                         action: 'Open Contact Page',
                         label: 'Contact Page'
                       });
-                    }} 
+                    }}
                     className='prim-but'
                   >
                     Share Now

@@ -139,9 +139,7 @@
     padding: 0;
 }
 
-/* .contact h3 {
-    color: #fff !important;
-} */
+
 
 .contact img {
     width: 100%;
@@ -254,34 +252,29 @@
     grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
 }
 
-/* .career-advice a {
-    box-shadow: 0 0 2px 0;
-} */
+
 
 .career-advice .gridlay .border {
     border-radius: 25px;
     box-shadow: 0 0 1px 0;
 }
 
-/* .career-advice .gridlay img {
-    height: 180px;
-} */
+
 
 .career-advice .tilted-card-inner {
     min-height: 500px;
 }
 
 .career-advice img {
-    /* min-height: 200px; */
     width: 100%;
     border-radius: 5px;
-    /* transition: ease 0.3s; */
+    object-fit: contain;
     object-fit: contain;
 }
 
 .career-advice img:hover {
     transform: scale(1.02);
-    /* box-shadow: 0 0 3px 0 #cccc; */
+    transform: scale(1.02);
 }
 
 .career-advice .car-adv {
@@ -345,53 +338,7 @@
 
 
 
-/* .blog-det img {
-    width: 100%;
-    height: 100%;
-    max-height: 500px;
-    object-fit: cover;
-    border-radius: 20px;
-}
 
-.blog-det h2 {
-    margin: 20px 0;
-}
-
-.blog-det .head-title {
-    font-size: 50px;
-}
-
-.blog-det h1,
-.blog-det h2,
-.blog-det h3,
-.blog-det h4,
-.blog-det h5,
-.blog-det h6 {
-    font-family: Arial-Bold;
-}
-
-.blog-det p,
-.blog-det li,
-.blog-det span {
-    font-family: Inter;
-    font-weight: 500;
-    line-height: 25px !important;
-}
-
-.blog-det .head {
-    font-size: 25px;
-    color: #263238;
-    font-family: Inter-Bold;
-}
-
-.blog-det p {
-    margin: 20px 0;
-}
-
-.blog-det a {
-    text-decoration: none;
-    color: #000;
-} */
 
 
 
@@ -423,10 +370,7 @@
     /* z-index: 1000; */
 }
 
-/* .temp-head .head-but {
-    position: absolute;
-    left: 40%;
-} */
+
 
 
 .temp-head h1 {

@@ -16,10 +16,10 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <>
         <div className='d-grid'>
           <div className="input-group">
-            {/* <span className="input-group-text">{icon}</span> */}
+
             <textarea
               className={`px-3 py-2 m-0 form-control border border-secondary shadow-sm focus:outline-none focus:ring-2 focus:ring-primary ${className} ${error && errorClassName
-              }`}
+                }`}
               {...restProps}
               ref={ref}
             />

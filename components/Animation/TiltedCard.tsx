@@ -18,7 +18,9 @@ interface TiltedCardProps {
   showTooltip?: boolean;
   displayOverlayContent?: boolean;
   title?: string;
+  priority?: boolean;
 }
+
 
 const springValues: SpringOptions = {
   damping: 30,
@@ -41,7 +43,9 @@ export default function TiltedCard({
   showTooltip = true,
 
   displayOverlayContent = false,
+  priority = false,
 }: TiltedCardProps) {
+
   const ref = useRef<HTMLElement>(null);
 
   const x = useMotionValue(0);
@@ -129,6 +133,7 @@ export default function TiltedCard({
             width: imageWidth,
             height: imageHeight,
           }}
+          {...(priority ? { fetchPriority: "high", loading: "eager" } : { loading: "lazy" })}
         />
 
         {/* {displayOverlayContent && overlayContent && (

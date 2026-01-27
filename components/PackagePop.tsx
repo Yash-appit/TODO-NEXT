@@ -8,7 +8,7 @@ import { RAZORPAY_KEY } from "@/config/index";
 import CustomModal from '@/components/Modal/Modal';
 import Success from './Success';
 import { useTimeZone } from '@/context/TimeZoneContext';
-// import { useLocation } from 'react-router-dom';
+
 import "@/styles/Package.css";
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -40,27 +40,27 @@ interface PackagePopProps {
 
 const setToLocalStorage = (key: string, value: string): void => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(key, value);
+        localStorage.setItem(key, value);
     }
-  };
+};
 
-  const setToSessionStorage = (key: string, value: string): void => {
+const setToSessionStorage = (key: string, value: string): void => {
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem(key, value);
+        sessionStorage.setItem(key, value);
     }
-  };
-  const getFromSessionStorage = (key: string) => {
+};
+const getFromSessionStorage = (key: string) => {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem(key);
-    }
-    return null;
-  };
-  const getFromLocalStorage = (key: string) => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(key);
+        return sessionStorage.getItem(key);
     }
     return null;
-  };
+};
+const getFromLocalStorage = (key: string) => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem(key);
+    }
+    return null;
+};
 
 const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
     const [packages, setPackages] = useState<Membership[]>([]);
@@ -87,8 +87,8 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
         script.src = 'https://checkout.razorpay.com/v1/checkout.js';
         script.async = true;
         document.body.appendChild(script);
-        
-        // console.log('Razorpay script added');
+
+
     };
 
     // Function to remove Razorpay script
@@ -96,7 +96,7 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
         const script = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
         if (script) {
             document.body.removeChild(script);
-            // console.log('Razorpay script removed');
+
         }
     };
 
@@ -123,7 +123,7 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
     useEffect(() => {
         // Add Razorpay script when component mounts
         addRazorpayScript();
-        
+
         // Fetch data
         fetchData();
 
@@ -166,14 +166,14 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
                 order_id: response?.data?.data?.gatewayOrderId,
                 handler: function (response: any) {
                     if (response.razorpay_payment_id) {
-                       
+
                         if (location.pathname === '/manage-subscription') {
                             fetchPay?.();
                             close();
                         } else {
                             openThankModal();
                         }
-                     
+
                     }
                 },
                 prefill: {
@@ -185,7 +185,7 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
             const rzp1 = new (window as any).Razorpay(options);
             rzp1.open();
             setIsLoading(false);
-            
+
 
         } catch (error: any) {
             setIsLoading(false);
@@ -276,9 +276,9 @@ const PackagePop = ({ fetchPay, close }: PackagePopProps) => {
 
 
         <CustomModal show={isThankOpen} onHide={() => setThankOpen(false)} custom='thank' title="">
-        <RefreshProvider>
-            <Success Hide={() => setThankOpen(false)} fetchPay={fetchPay} Close={close}/>
-                </RefreshProvider>
+            <RefreshProvider>
+                <Success Hide={() => setThankOpen(false)} fetchPay={fetchPay} Close={close} />
+            </RefreshProvider>
         </CustomModal>
     </>);
 };

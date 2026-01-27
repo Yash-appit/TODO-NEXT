@@ -568,6 +568,7 @@ const ATSScore: React.FC = () => {
                     showMobileWarning={false}
                     showTooltip={false}
                     displayOverlayContent={true}
+                    priority={true}
                   />
                 </div>
               </div>

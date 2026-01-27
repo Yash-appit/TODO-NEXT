@@ -15,14 +15,17 @@ type AdsComponent = React.ComponentType<AdsProps>;
 const SafeAds: React.FC = () => {
   // Lazy load the Ads component with error handling
   const LazyAds = lazy(async (): Promise<{ default: AdsComponent }> => {
+    // Artificial delay to prioritize main content loading (improves TBT)
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     try {
       const mod = await import('@/components/home/Ads');
       return mod;
     } catch (err) {
       console.warn('Failed to load Ads component:', err);
-      // Return a no-op component if import fails (e.g., blocked by ad blocker)
-      return { 
-        default: () => null 
+      // Return a no-op component if import fails
+      return {
+        default: () => null
       };
     }
   });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// import { useResume } from '../../context/ResumeContext';
+
 
 // Define types for the package data
 interface PackageData {
@@ -14,26 +14,26 @@ interface ResumeContextType {
   dashboard?: DashboardData;
 }
 
-  const getFromLocalStorage = (key: string) => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(key);
-    }
-    return null;
-  };
+const getFromLocalStorage = (key: string) => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+};
 
 const Ads: React.FC = () => {
-  // const { dashboard } = useResume() as ResumeContextType;
+
   const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
-  
+
   // Check if user doesn't have an active package
-   const packageData = getFromLocalStorage("package");
-   const shouldShowAds = packageData !== "true";
-   
+  const packageData = getFromLocalStorage("package");
+  const shouldShowAds = packageData !== "true";
+
   useEffect(() => {
     if (shouldShowAds && !scriptLoaded) {
       // Check if the script is already in the document
       const existingScript = document.querySelector('script[src*="pagead2.googlesyndication.com"]');
-      
+
       if (!existingScript) {
         // Load the Google AdSense script
         const script = document.createElement('script');
@@ -41,11 +41,11 @@ const Ads: React.FC = () => {
         script.async = true;
         script.setAttribute('crossorigin', 'anonymous');
         document.head.appendChild(script);
-        
+
         script.onload = () => {
           setScriptLoaded(true);
         };
-        
+
         script.onerror = () => {
           console.error('Failed to load AdSense script');
           setScriptLoaded(false);
@@ -70,7 +70,7 @@ const Ads: React.FC = () => {
           console.error('Error initializing ads:', error);
         }
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [scriptLoaded, shouldShowAds]);
@@ -78,20 +78,20 @@ const Ads: React.FC = () => {
   // Always show the ad container
   return (<>
     {shouldShowAds &&
-    <div className='text-center py-3'>
+      <div className='text-center py-3'>
 
-      <ins 
-        className="adsbygoogle"
-        style={{ 
-          display: 'block',
-        }}
-        data-ad-client="ca-pub-4949029990361775"
-        data-ad-slot="4837101466"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      ></ins>
-    </div>
-  }
+        <ins
+          className="adsbygoogle"
+          style={{
+            display: 'block',
+          }}
+          data-ad-client="ca-pub-4949029990361775"
+          data-ad-slot="4837101466"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+      </div>
+    }
   </>);
 };
 
