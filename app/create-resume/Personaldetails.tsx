@@ -9,7 +9,7 @@ import { AiWriter, UploadImage } from '@/services/resume/Index';
 import { RxCrossCircled } from "react-icons/rx";
 import pers from "@/assets/Images/resume-builder/pers.png";
 import { TextField } from '@mui/material';
-import ReactQuill from '@/components/Editor/ReactQuillEditor';
+import ReactQuill from '@/components/Editor/ReactQuillEditor'; // Dynamic import wrapper
 import { stripEmptyHtml } from '@/utils/htmlUtils';
 import edi from "@/assets/Images/resume-builder/editor.png";
 import sty from "@/assets/Images/resume-builder/sty.png";

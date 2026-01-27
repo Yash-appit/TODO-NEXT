@@ -1,333 +1,140 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { LuDot } from "react-icons/lu";
-import ToastMessage from '@/Layout/ToastMessage';
+import { saveAs } from 'file-saver';
 
-  const setToLocalStorage = (key: string, value: string): void => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, value);
-    }
-  };
 
-  const setToSessionStorage = (key: string, value: string): void => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem(key, value);
-    }
-  };
-  const getFromSessionStorage = (key: string) => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem(key);
-    }
-    return null;
-  };
-  const getFromLocalStorage = (key: string) => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(key);
-    }
-    return null;
-  };
+
+interface ElementStyles {
+  [key: string]: string;
+}
 
 const Finalize: React.FC = () => {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [resumeContent, setResumeContent] = useState<string>('');
-  const [resumeName, setResumeName] = useState<string>('Untitled');
+  const [resumeName, setResumeName] = useState<string>(localStorage.getItem('resumeName') || 'Untitled');
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [originalContent, setOriginalContent] = useState<string>('');
   const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
   const [isGeneratingDOC, setIsGeneratingDOC] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
-  const [isIOS, setIsIOS] = useState<boolean>(false);
-  const [scale, setScale] = useState<number>(100);
-  const [showBut, setShowBut] = useState<string>('');
-  
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const resumeContentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const pageHeightRef = useRef<number>(11 * 96); // 11 inches in pixels
 
   useEffect(() => {
-    // Check if we have resume data
-    if (typeof window !== 'undefined') {
-      // Try to get from URL params first
-      const urlParams = new URLSearchParams(window.location.search);
-      const resumeKey = urlParams.get('resumeKey');
-      
-      let savedContent = '';
-      let savedName = 'Untitled';
-      
-      if (resumeKey) {
-        savedContent = getFromLocalStorage(resumeKey) || '';
-        savedName = getFromLocalStorage('resumeName') || 'Untitled';
-      } else {
-        // Fallback to localStorage
-        savedContent = getFromLocalStorage('finalizeResume') || getFromLocalStorage('resumeData') || '';
-        savedName = getFromLocalStorage('resumeName') || 'Untitled';
-      }
-      
+    const resumeKey = searchParams.get('resumeKey');
+    const resumeNameParam = searchParams.get('resumeName');
+
+    if (resumeKey) {
+      // Try to get content from localStorage using the key from URL
+      const savedContent = localStorage.getItem(resumeKey) || '';
+
       if (savedContent) {
         setResumeContent(savedContent);
-        setResumeName(savedName);
+        setResumeName(resumeNameParam || localStorage.getItem('resumeName') || 'Untitled');
         setOriginalContent(savedContent);
-        
-        // Save to a consistent key for this session
-        setToLocalStorage('finalizeResume', savedContent);
       } else {
-        ToastMessage({
-          type: "error",
-          message: "No resume data found. Please create a resume first.",
-        });
-        router.push('/create-resume');
+        // Fallback or handle missing content
+        const savedContentBackup = localStorage.getItem('resumeData') || '';
+        if (savedContentBackup) {
+          setResumeContent(savedContentBackup);
+          setResumeName(localStorage.getItem('resumeName') || 'Untitled');
+          setOriginalContent(savedContentBackup);
+        }
+      }
+    } else {
+      // If no key in URL, try to get from localStorage (legacy/fallback behavior)
+      const savedContent = localStorage.getItem('resumeData') || '';
+      if (savedContent) {
+        setResumeContent(savedContent);
+        setResumeName(localStorage.getItem('resumeName') || 'Untitled');
+        setOriginalContent(savedContent);
+      } else {
+        router.push('/');
       }
     }
-  }, [router]);
-
-  // Responsive scaling
-  const getScaleBasedOnWidth = useCallback((width: number, isIOSDevice: boolean): number => {
-    if (isIOSDevice) {
-      if (width <= 375) return 35;
-      if (width <= 390) return 38;
-      if (width <= 414) return 40;
-      if (width <= 428) return 42;
-      if (width <= 768) return 45;
-      if (width <= 834) return 50;
-      if (width <= 1024) return 55;
-      return 60;
-    }
-
-    if (width <= 400) return 40;
-    if (width <= 600) return 50;
-    if (width <= 990) return 60;
-    if (width <= 1024) return 75;
-    if (width <= 1440) return 75;
-    return 75;
-  }, []);
+  }, [searchParams, router]);
 
   useEffect(() => {
-    const detectIOS = (): boolean => {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent);
-    };
-
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const isIOSDevice = detectIOS();
-      setIsSmallScreen(width < 1200);
-      setIsIOS(isIOSDevice);
-
-      // Calculate scale based on current width and device type
-      const newScale = getScaleBasedOnWidth(width, isIOSDevice);
-      setScale(newScale);
-      
-      // Update button class
-      setShowBut(isSmallScreen ? "prim-but" : "sec-but2");
-    };
-
-    // Initialize on mount
-    if (typeof window !== 'undefined') {
-      handleResize();
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('orientationchange', handleResize);
+    if (isEditMode && resumeContentRef.current) {
+      initializeDragAndDrop();
     }
+  }, [resumeContent, isEditMode]);
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('orientationchange', handleResize);
-      }
-    };
-  }, [getScaleBasedOnWidth]);
+  const initializeDragAndDrop = (): void => {
+    const draggableSections = resumeContentRef.current?.querySelectorAll('.section[data-draggable="true"]');
+    let draggedItem: Element | null = null;
 
-  // Update iframe content
-  const updateResumeContent = useCallback(() => {
-    if (!iframeRef.current || !resumeContent) return;
+    if (!draggableSections) return;
 
-    const iframe = iframeRef.current;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    draggableSections.forEach((section) => {
+      section.setAttribute('draggable', 'true');
 
-    if (!doc) return;
+      const newSection = section.cloneNode(true);
+      section.parentNode?.replaceChild(newSection, section);
 
-    const scrollTop = iframe.contentWindow?.scrollY || 0;
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = resumeContent;
+      newSection.addEventListener('dragstart', function (this: HTMLElement, e: Event) {
+        draggedItem = this;
+        setTimeout(() => {
+          this.classList.add('dragging');
+        }, 0);
+      });
 
-    const transitionStyle = document.createElement('style');
-    transitionStyle.textContent = `
-      .resume-content {
-        transition: opacity 0.3s ease-in-out;
-      }
-      .resume-content.fade-out {
-        opacity: 0;
-      }
-      .resume-content.fade-in {
-        opacity: 1;
-      }
-      ${isEditMode ? `
-        * {
-          -webkit-touch-callout: text;
-          -webkit-user-select: text;
-          -khtml-user-select: text;
-          -moz-user-select: text;
-          -ms-user-select: text;
-          user-select: text;
-          cursor: text;
+      newSection.addEventListener('dragend', function (this: HTMLElement) {
+        this.classList.remove('dragging');
+        draggedItem = null;
+
+        draggableSections.forEach(item => {
+          item.classList.remove('drag-over');
+        });
+
+        updateResumeContentAfterDrag();
+      });
+
+      newSection.addEventListener('dragover', function (e: Event) {
+        e.preventDefault();
+      });
+
+      newSection.addEventListener('dragenter', function (this: HTMLElement, e: Event) {
+        e.preventDefault();
+        if (this !== draggedItem) {
+          this.classList.add('drag-over');
         }
-        [contenteditable="true"]:focus {
-          outline: 2px solid #007bff;
-          background-color: rgba(0, 123, 255, 0.1);
-          border-radius: 2px;
-        }
-      ` : ''}
-    `;
-    tempDiv.querySelector('head')?.appendChild(transitionStyle);
+      });
 
-    const currentContent = doc.querySelector('.resume-content');
-    if (currentContent) {
-      currentContent.classList.add('fade-out');
-    }
+      newSection.addEventListener('dragleave', function (this: HTMLElement) {
+        this.classList.remove('drag-over');
+      });
 
-    setTimeout(() => {
-      doc.open();
-      doc.write(tempDiv.innerHTML);
+      newSection.addEventListener('drop', function (this: HTMLElement, e: Event) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
 
-      const body = doc.querySelector('body');
-      if (body) {
-        body.classList.add('resume-content');
-        body.classList.add('fade-out');
+        if (draggedItem && this !== draggedItem) {
+          const allSections = Array.from(document.querySelectorAll('.section[data-draggable="true"]'));
+          const thisIndex = allSections.indexOf(this);
+          const draggedIndex = allSections.indexOf(draggedItem);
 
-        const paginationStyle = document.createElement('style');
-        paginationStyle.textContent = `
-          @page {
-            size: 8.5in 11in;
-            margin: 0;
+          if (draggedIndex < thisIndex) {
+            this.parentNode?.insertBefore(draggedItem, this.nextSibling);
+          } else {
+            this.parentNode?.insertBefore(draggedItem, this);
           }
-          body {
-            margin: 0;
-            padding: 0;
-            -webkit-text-size-adjust: 100%;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            transition: opacity 0.3s ease-in-out;
-          }
-          .page-break {
-            page-break-after: always;
-            height: 0;
-            margin: 0;
-            border: none;
-          }
-         
-          ${!isEditMode ? `
-            * {
-              -webkit-touch-callout: none;
-              -webkit-user-select: none;
-              -khtml-user-select: none;
-              -moz-user-select: none;
-              -ms-user-select: none;
-              user-select: none;
-            }
-          ` : ''}
-        `;
-        doc.head.appendChild(paginationStyle);
-
-        // Apply scaling and styling
-        body.style.position = 'relative';
-        body.style.overflowX = 'hidden';
-        body.style.width = '8.5in';
-        body.style.minHeight = '11in';
-        body.style.transformOrigin = 'top left';
-        body.style.transform = `scale(${scale / 100})`;
-        body.style.background = 'white';
-
-        if (isIOS) {
-          body.style.webkitTransform = `scale(${scale / 100})`;
-          body.style.webkitTransformOrigin = 'top left';
         }
-
-        // Make content editable when in edit mode
-        if (isEditMode) {
-          makeContentEditable(body);
-        }
-      }
-
-      doc.close();
-      addPageBreaks(doc);
-      iframe.contentWindow?.scrollTo(0, scrollTop);
-
-      setTimeout(() => {
-        const newBody = doc.querySelector('body');
-        if (newBody) {
-          newBody.classList.remove('fade-out');
-          newBody.classList.add('fade-in');
-        }
-        setIsLoading(false);
-      }, 50);
-    }, 300);
-  }, [resumeContent, isEditMode, scale, isIOS]);
-
-  const makeContentEditable = (body: HTMLElement) => {
-    const editableElements = body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, span, div');
-
-    editableElements.forEach(element => {
-      if (element.textContent && element.textContent.trim().length > 0) {
-        element.setAttribute('contenteditable', 'true');
-        element.addEventListener('input', handleContentEdit);
-        element.addEventListener('blur', handleContentBlur);
-      }
+      });
     });
   };
 
-  const handleContentEdit = (event: Event) => {
-    // Real-time updates can be handled here if needed
-  };
-
-  const handleContentBlur = (event: Event) => {
-    updateEditedResume();
-  };
-
-  const updateEditedResume = () => {
-    if (!iframeRef.current) return;
-
-    const iframe = iframeRef.current;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-
-    if (doc) {
-      const updatedContent = doc.documentElement.outerHTML;
-      setResumeContent(updatedContent);
+  const updateResumeContentAfterDrag = (): void => {
+    if (resumeContentRef.current) {
+      const updatedHTML = resumeContentRef.current.innerHTML;
+      setResumeContent(updatedHTML);
     }
   };
-
-  const addPageBreaks = (doc: Document) => {
-    if (!doc.body) return;
-
-    const existingBreaks = doc.querySelectorAll('.page-break');
-    existingBreaks.forEach(br => br.remove());
-
-    const pageHeight = pageHeightRef.current;
-    const bodyHeight = doc.body.scrollHeight;
-
-    doc.body.style.minHeight = `${pageHeight}px`;
-
-    for (let i = 1; i < Math.ceil(bodyHeight / pageHeight); i++) {
-      const yPosition = i * pageHeight;
-      const pageBreak = doc.createElement('div');
-      pageBreak.className = 'page-break';
-      pageBreak.style.position = 'absolute';
-      pageBreak.style.top = `${yPosition}px`;
-      pageBreak.style.left = '0';
-      pageBreak.style.width = '100%';
-      pageBreak.style.height = '0';
-      pageBreak.dataset.pageNumber = i.toString();
-      doc.body.appendChild(pageBreak);
-    }
-  };
-
-  // Initialize iframe content
-  useEffect(() => {
-    if (resumeContent && iframeRef.current) {
-      setIsLoading(true);
-      updateResumeContent();
-    }
-  }, [resumeContent, updateResumeContent]);
 
   const toggleEditMode = (): void => {
     if (!isEditMode) {
@@ -339,12 +146,13 @@ const Finalize: React.FC = () => {
   };
 
   const saveEdits = (): void => {
-    updateEditedResume();
-    
-    if (typeof window !== 'undefined') {
-      setToLocalStorage('finalizeResume', resumeContent);
+    const currentContent = resumeContentRef.current?.innerHTML || resumeContent;
+    const resumeKey = searchParams.get('resumeKey');
+    if (resumeKey) {
+      localStorage.setItem(resumeKey, currentContent);
     }
 
+    setResumeContent(currentContent);
     alert('Your changes have been saved!');
     setIsEditMode(false);
   };
@@ -355,74 +163,72 @@ const Finalize: React.FC = () => {
   };
 
   const close = (): void => {
+    const resumeKey = searchParams.get('resumeKey');
+    if (resumeKey) {
+      const currentContent = resumeContentRef.current?.innerHTML || resumeContent;
+      localStorage.setItem(resumeKey, currentContent);
+    }
     router.push('/create-resume');
   };
 
+  // Enhanced PDF Generation
+  // Alternative: Fixed DPI approach
   const downloadAsPDF = async () => {
-    if (!iframeRef.current) return;
-    
+    if (!resumeContentRef.current) return;
+
     setIsGeneratingPDF(true);
-    
+
     try {
-      const element = iframeRef.current;
+      const element = resumeContentRef.current;
       const printWindow = window.open('', '_blank');
-      
+
       if (printWindow) {
-        // Get content from iframe
-        const iframeDoc = element.contentDocument || element.contentWindow?.document;
-        const content = iframeDoc?.documentElement.outerHTML || '';
-        
         printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>${resumeName}</title>
-            <style>
-              @media print {
-                body {
-                display: flex;
-                justify-content:center;
-                  width: 8.5in;
-                  margin: 0 auto;
-                  padding: 0;
-                  font-size: 12pt !important;
-                  transform: none !important;
-                  background: white !important;
-                }
-                * {
-                  word-wrap: break-word !important;
-                  max-width: 100% !important;
-                  font-size: inherit !important;
-                }
-                h1 { font-size: 24pt !important; }
-                h2 { font-size: 18pt !important; }
-                h3 { font-size: 14pt !important; }
-                p, li, td { font-size: 12pt !important; }
-                @page {
-                  margin: 0.5in;
-                  size: letter;
-                }
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${resumeName}</title>
+          <style>
+            @media print {
+              body {
+                width: 8.5in;
+                margin: 0 auto;
+                padding: 0;
+                font-size: 12pt !important;
+                transform: none !important;
               }
-            </style>
-          </head>
-          <body>
-            ${content}
-          </body>
-          </html>
-        `);
-        
+              * {
+                word-wrap: break-word !important;
+                max-width: 100% !important;
+                font-size: inherit !important;
+              }
+              h1 { font-size: 24pt !important; }
+              h2 { font-size: 18pt !important; }
+              h3 { font-size: 14pt !important; }
+              p, li, td { font-size: 12pt !important; }
+              @page {
+                margin: 15px;
+                size: letter;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${element.innerHTML}
+        </body>
+        </html>
+      `);
+
         printWindow.document.close();
         printWindow.focus();
-        
+
         // Wait for content to load
-        
+        setTimeout(() => {
           printWindow.print();
-          setTimeout(() => {
-            printWindow.close();
-          }, 0);
-      
+          printWindow.close();
+        }, 200);
       }
-      
+
     } catch (error) {
       console.error('Error with print method:', error);
       alert('Please use Ctrl+P to print your resume as PDF');
@@ -431,147 +237,144 @@ const Finalize: React.FC = () => {
     }
   };
 
-  const downloadRawHTMLasDOC = async () => {
+
+  const downloadRawHTMLasDOC = () => {
     if (!resumeContent) return;
-    setIsGeneratingDOC(true);
+
+    const PAGE_GAP = 20;
+
+    // Option 1: Remove any color styles from resumeContent
+    const normalizedContent = resumeContent
+      .replace(/color:\s*[^;"]*;/gi, '') // Remove color styles
+      .replace(/color:\s*[^;"]*/gi, '') // Remove color without semicolon
+      .replace(/style="([^"]*color[^"]*)"/gi, '') // Remove styles with color
+      .replace(/<font[^>]*>/gi, '') // Remove font tags if any
+      .replace(/<\/font>/gi, '');
+
+    // Option 2: Or force black color by adding style attributes
+    const forcedBlackContent = resumeContent
+      .replace(/(<[^>]+)(style="[^"]*")/gi, (match, tag, style) => {
+        return `${tag}style="${style}; color: #000000 !important;"`;
+      })
+      .replace(/(<[^>]+)(?!style)/gi, (match, tag) => {
+        // Add style to elements without style attribute
+        if (tag.match(/<(p|h[1-6]|div|span|li|td|th)/i)) {
+          return `${tag} style="color: #000000;"`;
+        }
+        return match;
+      });
+
+    // Use either normalizedContent or forcedBlackContent in your template
+    const contentToUse = normalizedContent; // or forcedBlackContent
+
+    const docStr = `
+      <!DOCTYPE html>
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:w="urn:schemas-microsoft-com:office:word">
+      <head>
+        <meta charset="utf-8"/>
+        <title>${resumeName}</title>
   
-    try {
-      const PAGE_GAP = 20;
-      
-      // Create a temporary iframe to get cleaned content
-      const tempIframe = document.createElement('iframe');
-      tempIframe.style.display = 'none';
-      document.body.appendChild(tempIframe);
-      
-      const tempDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
-      if (!tempDoc) throw new Error('Could not create document');
-      
-      tempDoc.open();
-      tempDoc.write(resumeContent);
-      tempDoc.close();
-      
-      // Remove any drag handles and edit elements
-      const dragHandles = tempDoc.querySelectorAll('.drag-handle, .section[data-draggable="true"]::before');
-      dragHandles.forEach(handle => handle.remove());
-      
-      // Remove edit mode styles
-      tempDoc.querySelectorAll('[contenteditable="true"]').forEach(el => {
-        el.removeAttribute('contenteditable');
-      });
-      
-      const cleanedContent = tempDoc.documentElement.outerHTML;
-      document.body.removeChild(tempIframe);
-      
-      // Remove any color styles from resumeContent
-      const normalizedContent = cleanedContent
-        .replace(/color:\s*[^;"]*;/gi, '')
-        .replace(/color:\s*[^;"]*/gi, '')
-        .replace(/style="([^"]*color[^"]*)"/gi, '')
-        .replace(/<font[^>]*>/gi, '')
-        .replace(/<\/font>/gi, '');
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:AutoHyphenation/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
   
-      const docStr = `
-        <!DOCTYPE html>
-        <html xmlns:o="urn:schemas-microsoft-com:office:office"
-              xmlns:w="urn:schemas-microsoft-com:office:word">
-        <head>
-          <meta charset="utf-8"/>
-          <title>${resumeName}</title>
-    
-          <!--[if gte mso 9]>
-          <xml>
-            <w:WordDocument>
-              <w:View>Print</w:View>
-            </w:WordDocument>
-          </xml>
-          <![endif]-->
-    
-          <style>
-            @page { 
-              size: 8.5in 11in; 
-              margin: 0.5in 0.5in;
-            }
-            * {
-              color: #000000 !important;
-            }
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 0;
-              padding: 0;
-              line-height: 1.5;
-            }
-            .center-table {
-              width: 100%;
-              border-collapse: inherit;
-              margin-top: 0;
-            }
-            .content-cell {
-              width: 7.5in;
-              padding: 0;
-              vertical-align: top;
-            }
-            table {
-              border-collapse: inherit;
-              width: -webkit-fill-available;
-            }
-            p {
-              margin: 0.08in 0;
-            }
-            h1, h2, h3, h4, h5, h6 {
-              margin: 0.2in 0 0.08in 0;
-            }
-            h1:first-child, h2:first-child, h3:first-child {
-              margin-top: 0;
-            }
-            div {
-              margin-bottom: 0.12in;
-            }
-          </style>
-        </head>
-    
-        <body>
-          <table class="center-table" align="center">
-            <tr>
-              <td class="content-cell">
-                ${normalizedContent}
-              </td>
-            </tr>
-          </table>
-          <div style="height:${PAGE_GAP}px;"></div>
-        </body>
-        </html>
-      `;
-    
-      const blob = new Blob(['\uFEFF' + docStr], {
-        type: 'application/msword;charset=utf-8',
-      });
-    
-      const fileName = `${resumeName.replace(/\s+/g, '_')}.doc`;
-      
-      // Using a simple download approach
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating DOC:', error);
-      ToastMessage({
-        type: "error",
-        message: "Error generating DOC file. Please try again.",
-      });
-    } finally {
-      setIsGeneratingDOC(false);
-    }
+        <style>
+          @page { 
+            size: 8.5in 11in; 
+            margin: 0.5in 0.5in;
+          }
+          * {
+            color: #000000 !important; /* Force black on ALL elements */
+          }
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+          }
+          .center-table {
+            width: 100%;
+            border-collapse: inherit;
+            margin-top: 0;
+          }
+          .content-cell {
+            width: 7.5in;
+            padding: 0;
+            vertical-align: top;
+          }
+          table {
+            border-collapse: inherit;
+            width: -webkit-fill-available;
+          }
+          p {
+            margin: 0.08in 0;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            margin: 0.2in 0 0.08in 0;
+          }
+          h1:first-child, h2:first-child, h3:first-child {
+            margin-top: 0;
+          }
+          div {
+            margin-bottom: 0.12in;
+          }
+        </style>
+      </head>
+  
+      <body>
+        <table class="center-table" align="center">
+          <tr>
+            <td class="content-cell">
+              ${contentToUse}
+            </td>
+          </tr>
+        </table>
+        <div style="height:${PAGE_GAP}px;"></div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\uFEFF' + docStr], {
+      type: 'application/msword;charset=utf-8',
+    });
+
+    const fileName = `${resumeName.replace(/\s+/g, '_')}.doc`;
+    saveAs(blob, fileName);
   };
 
-  const iframeWidth = 8.5 * (scale / 100);
-  const iframeHeight = 11 * (scale / 100);
 
-  return (
+  const makeContentEditable = (): void => {
+    const editableElements = resumeContentRef.current?.querySelectorAll('h1, h2, h3, p, li, td, span, .editable');
+    editableElements?.forEach(element => {
+      element.setAttribute('contenteditable', 'true');
+    });
+  };
+
+  const makeContentNonEditable = (): void => {
+    const editableElements = resumeContentRef.current?.querySelectorAll('[contenteditable="true"]');
+    editableElements?.forEach(element => {
+      element.removeAttribute('contenteditable');
+    });
+  };
+
+  useEffect(() => {
+    if (isEditMode) {
+      makeContentEditable();
+      setTimeout(() => {
+        initializeDragAndDrop();
+      }, 100);
+    } else {
+      makeContentNonEditable();
+    }
+  }, [isEditMode]);
+
+  return (<>
     <div className="finalize-container" ref={containerRef}>
       <div className="editor-header">
         <div className="header-left">
@@ -601,10 +404,6 @@ const Finalize: React.FC = () => {
                 className={`editor-btn download-btn pdf-btn ${isGeneratingPDF ? 'loading' : ''}`}
                 onClick={downloadAsPDF}
                 disabled={isGeneratingPDF || isGeneratingDOC}
-                style={{
-                  minHeight: '44px',
-                  fontSize: isIOS ? '16px' : 'inherit',
-                }}
               >
                 {isGeneratingPDF ? (
                   <>
@@ -622,33 +421,26 @@ const Finalize: React.FC = () => {
                 className={`editor-btn download-btn doc-btn ${isGeneratingDOC ? 'loading' : ''}`}
                 onClick={downloadRawHTMLasDOC}
                 disabled={isGeneratingPDF || isGeneratingDOC}
-                style={{
-                  minHeight: '44px',
-                  fontSize: isIOS ? '16px' : 'inherit',
-                }}
               >
                 {isGeneratingDOC ? (
+
                   <div className='generating'>
                     <span className="spinner"></span>
                     Generating...
                   </div>
+
                 ) : (
+
                   <div className='generating'>
                     <span className="btn-icon">📝</span>
                     Download DOC
                   </div>
+
                 )}
               </button>
             </div>
           )}
-          <button 
-            className="editor-btn back-btn" 
-            onClick={close}
-            style={{
-              minHeight: '44px',
-              fontSize: isIOS ? '16px' : 'inherit',
-            }}
-          >
+          <button className="editor-btn back-btn" onClick={close}>
             <span className="btn-icon">←</span>
             Go Back
           </button>
@@ -671,22 +463,22 @@ const Finalize: React.FC = () => {
                 <div className="tip-item">
                   <div className="tip-icon"><LuDot /></div>
                   <div className="tip-content">
+                    <strong>Reorder Sections</strong>
+                    <p>Drag the handle (⋮⋮) to reorder sections</p>
+                  </div>
+                </div>
+                <div className="tip-item">
+                  <div className="tip-icon"><LuDot /></div>
+                  <div className="tip-content">
                     <strong>Save Changes</strong>
-                    <p>Click &quot;Save Changes&quot; when done editing</p>
+                    <p>Click "Save Changes" when done editing</p>
                   </div>
                 </div>
                 <div className="tip-item">
                   <div className="tip-icon"><LuDot /></div>
                   <div className="tip-content">
                     <strong>Cancel</strong>
-                    <p>Click &quot;Cancel&quot; to discard all changes</p>
-                  </div>
-                </div>
-                <div className="tip-item">
-                  <div className="tip-icon"><LuDot /></div>
-                  <div className="tip-content">
-                    <strong>Download</strong>
-                    <p>Exit edit mode to download PDF or DOC</p>
+                    <p>Click "Cancel" to discard all changes</p>
                   </div>
                 </div>
               </div>
@@ -695,48 +487,32 @@ const Finalize: React.FC = () => {
         )}
 
         <div className={`resume-preview-container ${isEditMode ? 'with-sidebar' : ''}`}>
-          <div className="resume-preview-controls">
-            <div className="preview-info">
-              <span className="info-badge">
-                {isEditMode ? 'Edit Mode' : 'Preview Mode'}
-              </span>
-              <span className="page-size">US Letter (8.5&quot; × 11&quot;)</span>
-            </div>
-          </div>
-          
-          <div className="resume-preview-wrapper">
-            {isLoading && (
-              <div className="loading-overlay">
-                <div className="spinner" />
-                <span>Loading resume...</span>
-              </div>
-            )}
-            
-            <div className="page-container">
-              <iframe
-                ref={iframeRef}
-                className="resume-preview-iframe"
-                title="Resume Preview"
-                style={{
-                  height: `${iframeHeight}in`,
-                  width: `${iframeWidth}in`,
-                  minHeight: `${iframeHeight}in`,
-                  minWidth: `${iframeWidth}in`,
-                  cursor: isEditMode ? 'text' : 'default'
-                }}
-              />
-              <div className="page-shadow"></div>
-            </div>
+          <div className="resume-paper">
+            <div
+              ref={resumeContentRef}
+              id="resumeContent"
+              className={`resume-content ${isEditMode ? 'edit-mode' : ''}`}
+              dangerouslySetInnerHTML={{ __html: resumeContent }}
+            />
           </div>
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
+        // :root {
+        //   --zoom-level: 1;
+        // }
+        
         .finalize-container {
-          padding: ${isIOS ? '10px' : '20px'};
+          padding: 20px;
           background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
           min-height: 100vh;
-          -webkit-overflow-scrolling: touch;
+          // transform: scale(var(--zoom-level));
+          transform-origin: top center;
+        }
+
+        .finalize-container table {
+            border-collapse: inherit;
         }
 
         .editor-header {
@@ -828,9 +604,9 @@ const Finalize: React.FC = () => {
           background: rgba(10, 88, 64, 0.1);
         }
 
-        .generating {
-          height: 25px;
-        }
+        .generating{
+             height: 25px;
+             }
 
         .save-btn {
           background: #0A5840;
@@ -857,7 +633,7 @@ const Finalize: React.FC = () => {
         .download-btn {
           color: white;
           border: none;
-          height: 40px;
+               height: 40px;
         }
 
         .pdf-btn {
@@ -871,7 +647,7 @@ const Finalize: React.FC = () => {
 
         .doc-btn {
           background: linear-gradient(135deg, #2c5899, #3a6bc5);
-          height: 40px;
+               height: 40px;
         }
 
         .doc-btn:hover:not(:disabled) {
@@ -888,6 +664,10 @@ const Finalize: React.FC = () => {
           background: #545b62;
           border-color: #545b62;
         }
+
+         .main-content{
+         display: block;
+         }
 
         .main-content-wrapper {
           display: flex;
@@ -1001,70 +781,65 @@ const Finalize: React.FC = () => {
           border-radius: 4px;
         }
 
-        .resume-preview-wrapper {
-          flex: 1;
-          overflow: ${isIOS ? 'auto' : 'hidden'};
-          -webkit-overflow-scrolling: touch;
-          border-radius: 4px;
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          padding: ${isSmallScreen ? '0 10px' : '0 20px'};
-          min-height: ${iframeHeight}in;
-          position: relative;
+        .resume-paper {
           background: white;
           border-radius: 0 0 12px 12px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          overflow: auto;
+          min-height: calc(100vh - 200px);
         }
 
-        .page-container {
+        .resume-content {
+          max-width: 8.5in;
+          min-height: 11in;
+          margin: 0 auto;
+          background: white;
+          padding: 20px;
+          box-sizing: border-box;
           position: relative;
-          height: ${iframeHeight}in;
-          width: ${iframeWidth}in;
-          min-height: ${iframeHeight}in;
-          min-width: ${iframeWidth}in;
-          margin: ${isSmallScreen ? '0 auto' : '0'};
         }
 
-        .resume-preview-iframe {
-          border: none;
-          background-color: white;
-          box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          overflow: hidden;
-          min-height: ${iframeHeight}in;
-          min-width: ${iframeWidth}in;
-          -webkit-transform: translateZ(0);
-          transform: translateZ(0);
-        }
-
-        .page-shadow {
-          position: absolute;
-          top: 5px;
-          left: 5px;
-          right: -5px;
-          bottom: -5px;
-          background-color: rgba(0,0,0,0.03);
-          z-index: -1;
-          border-radius: 2px;
-        }
-
-        .loading-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(255, 255, 255, 0.8);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          z-index: 10;
-          border-radius: 4px;
-          gap: 10px;
+        .resume {
+        height: auto;
         }
 
         /* Edit mode styles */
+        .section[data-draggable="true"] {
+          position: relative;
+          transition: all 0.3s ease;
+          padding: 8px;
+          border-radius: 4px;
+        }
+
+        .section[data-draggable="true"]::before {
+          content: '⋮⋮';
+          position: absolute;
+          left: -25px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6c757d;
+          font-size: 18px;
+          cursor: move;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          z-index: 10;
+        }
+
+        .edit-mode .section[data-draggable="true"]::before {
+          opacity: 1;
+        }
+
+        .section[data-draggable="true"].dragging {
+          opacity: 0.5;
+          background: rgba(0, 123, 255, 0.1);
+          border: 2px dashed #007bff;
+        }
+
+        .section[data-draggable="true"].drag-over {
+          border: 2px dashed #0A5840;
+          background-color: rgba(10, 88, 64, 0.05);
+        }
+
         .edit-mode [contenteditable="true"] {
           outline: 1px dashed rgba(0, 123, 255, 0.3);
           padding: 2px 4px;
@@ -1100,6 +875,10 @@ const Finalize: React.FC = () => {
           .resume-preview-container.with-sidebar {
             max-width: 100%;
           }
+          
+          .resume-content {
+            padding: 20px;
+          }
         }
 
         @media (max-width: 768px) {
@@ -1129,8 +908,13 @@ const Finalize: React.FC = () => {
             font-size: 20px;
           }
           
-          .resume-preview-wrapper {
-            padding: 0 10px;
+          .resume-paper {
+            padding: 10px 0;
+          }
+          
+          .resume-content {
+            padding: 0;
+            min-height: auto;
           }
           
           .resume-preview-controls {
@@ -1145,36 +929,29 @@ const Finalize: React.FC = () => {
           }
         }
 
-        @media screen and (max-width: 428px) and (-webkit-min-device-pixel-ratio: 2) {
-          .finalize-container {
-            padding: 10px 5px;
+        @media (max-width: 480px) {
+          .editor-btn {
+            padding: 8px 16px;
+            font-size: 13px;
           }
           
-          .resume-preview-wrapper {
-            padding: 0 5px;
+          .btn-icon {
+            font-size: 14px;
           }
           
-          .page-container {
-            max-width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+          .zoom-controls {
+            width: 100%;
+            justify-content: center;
           }
-        }
-
-        @media screen and (min-width: 768px) and (max-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
-          .resume-preview-wrapper {
-            padding: 0 15px;
+          
+          .preview-info {
+            width: 100%;
+            justify-content: space-between;
           }
-        }
-
-        input, select, textarea, button {
-          font-size: ${isIOS ? '16px' : 'inherit'} !important;
-        }
-
-        .editor-btn, .dropdown-toggle {
-          min-height: 44px !important;
-          -webkit-tap-highlight-color: transparent;
-          touch-action: manipulation;
+          
+          .resume-content {
+            padding: 10px;
+          }
         }
 
         /* Print styles */
@@ -1191,25 +968,33 @@ const Finalize: React.FC = () => {
             transform: none !important;
           }
           
-          .resume-preview-wrapper {
+          .resume-paper {
             box-shadow: none;
             padding: 0;
             border-radius: 0;
           }
           
-          .resume-preview-iframe {
+          .resume-content {
+            padding: 0.5in;
+            margin: 0;
             box-shadow: none;
-            border: none;
+          }
+          
+          .section[data-draggable="true"]::before {
+            display: none;
           }
           
           .edit-mode [contenteditable="true"] {
             outline: none !important;
             background: transparent !important;
           }
+            .resume {
+            height: auto;
+            }
         }
       `}</style>
     </div>
-  );
+  </>);
 };
 
 export default Finalize;

@@ -139,17 +139,24 @@ const SkillsAndInterests: React.FC<SkillsAndInterestsProps> = ({
   const detailSkillValue = watch('detailSkill');
 
   // Effect to handle detailStrength data changes
+  // Effect to handle detailStrength data changes
   useEffect(() => {
     if (detailStrengthValue && detailStrengthValue.trim() !== '') {
-      setStrengths(['']);
+      // Only clear strengths if they are not already empty
+      const isStrengthsEmpty = strengths.length === 1 && strengths[0] === '';
+      if (!isStrengthsEmpty) {
+        setStrengths(['']);
+      }
     }
+  }, [detailStrengthValue, strengths]);
 
+  // Separate effect for clearing detailStrength when strengths are added
+  useEffect(() => {
     const hasStrengthsData = strengths.some(strength => strength.trim() !== '');
-
-    if (hasStrengthsData) {
+    if (hasStrengthsData && detailStrengthValue !== '') {
       setValue('detailStrength', '');
     }
-  }, [detailStrengthValue, strengths, setValue]);
+  }, [strengths, detailStrengthValue, setValue]);
 
   // Effect to handle detailInterest data changes
   useEffect(() => {
@@ -239,7 +246,7 @@ const SkillsAndInterests: React.FC<SkillsAndInterestsProps> = ({
           Generate();
         }
       }
-    }, 3000);
+    }, 1000);
     setTypingTimeout(newTimeout);
 
     return () => {
