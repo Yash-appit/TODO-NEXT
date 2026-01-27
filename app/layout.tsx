@@ -36,10 +36,10 @@ const gambetta = localFont({
 
 const arial = localFont({
   src: [
-    { path: "../assets/Fonts/Arial.ttf", weight: "400", style: "normal" },
-    { path: "../assets/Fonts/Arial-Bold.ttf", weight: "700", style: "normal" },
-    { path: "../assets/Fonts/Arial-Bold-Italic.ttf", weight: "700", style: "italic" },
-    { path: "../assets/Fonts/Arial-Black.ttf", weight: "900", style: "normal" },
+    { path: "../assets/Fonts/Arial.TTF", weight: "400", style: "normal" },
+    { path: "../assets/Fonts/Arial-bold.TTF", weight: "700", style: "normal" },
+    { path: "../assets/Fonts/Arial-Bold-Italic.TTF", weight: "700", style: "italic" },
+    { path: "../assets/Fonts/Arial-Black.TTF", weight: "900", style: "normal" },
   ],
   variable: "--font-arial",
   display: "swap",
