@@ -51,7 +51,8 @@
 }
 
 .sidebar .active p {
-    font-family: Arial-Bold !important;
+    font-family: Arial !important;
+    font-weight: 600;
 }
 
 .sidebar a p {
@@ -79,7 +80,8 @@
 
 .admin-nav h4,
 .admin-nav .sec-col {
-    font-family: Arial-Bold;
+    font-family: Arial;
+    font-weight: 600;
 }
 
 
@@ -109,7 +111,7 @@
     display: flex;
     align-items: center;
     font-size: 16px;
-    font-family: Inter;
+    font-family: var(--font-inter);
 }
 
 .admin-nav h4 svg {
@@ -131,7 +133,8 @@
 
 .update-resume .pagination-container .page-link {
     color: #0A5840;
-    font-family: Inter-Semi-bold !important;
+    font-family: var(--font-inter) !important;
+    font-weight: 500;
 }
 
 .update-resume .pagination-container .active .page-link {
@@ -229,7 +232,8 @@
 
 .dashboard h2 span {
     color: #0A5840;
-    font-family: "Arial-Bold";
+    font-family: "Arial";
+    font-weight: 600;
     font-size: inherit;
 }
 
@@ -237,7 +241,8 @@
 .page-head h3 span {
     color: #0A5840;
     font-size: inherit;
-    font-family: "Arial-Bold";
+    font-family: "Arial";
+    font-weight: 600;
     /* border-bottom: #0A5840 solid 4px; */
 }
 
@@ -249,7 +254,8 @@
 .page-head h6 span {
     color: #0A5840;
     font-size: inherit;
-    font-family: "Arial-Bold";
+    font-family: "Arial";
+        font-weight: 600;
     /* border-bottom: #0A5840 solid 4px; */
 }
 
@@ -276,7 +282,8 @@
     text-align: center;
     width: max-content;
     padding: 12px 20px 14px 20px !important;
-    font-family: "Roboto-Bold";
+    font-family: var(--font-roboto);
+    font-weight: 600;
 }
 
 .dashboard span {
@@ -346,11 +353,12 @@
 
 .update-resume .active {
     color: #0A5840 !important;
-    font-family: Inter-Semi-bold !important;
+    font-family: var(--font-inter) !important;
+    font-weight: 500 !important;
 }
 
 .update-resume .nav-link {
-    font-family: Inter;
+    font-family: var(--font-inter) !important;
     color: #7D7D7D;
 }
 
@@ -465,7 +473,7 @@ background-color: #D9D9D9;
 .update-resume .create-res p {
     color: #578F7E;
     margin-top: 4px;
-    font-family: Inter;
+    font-family: var(--font-inter);
     font-weight: 500;
     font-size: 15px;
 }
@@ -663,7 +671,8 @@ background-color: #D9D9D9;
     border: #5C5C5C solid 1px;
     font-size: 16px;
     padding: 8px 20px;
-    font-family: Inter-Semi-bold;
+    font-family: var(--font-inter);
+    font-weight: 500;
     width: max-content;
 
 }
@@ -678,7 +687,8 @@ background-color: #D9D9D9;
 
 .change-pass h6 {
     color: #5A5A5A;
-    font-family: Inter-Semi-bold;
+    font-family: var(--font-inter);
+    font-weight: 500;
 }
 
 .change-pass .pic-upload label {
@@ -824,7 +834,8 @@ background-color: #D9D9D9;
 .manage-subs table td:nth-child(1),
 .manage-subs table td:nth-child(2),
 .manage-subs table th {
-    font-family: Arial-Bold;
+    font-family: Arial;
+    font-weight: 600;
 }
 
 .manage-subs p {
@@ -913,7 +924,7 @@ background-color: #D9D9D9;
     margin: 20px 0;
     color: #313131c4;
     font-size: 16px;
-    font-family: Inter;
+    font-family: var(--font-inter);
 }
 
 .logout .modal-content,
@@ -923,7 +934,8 @@ background-color: #D9D9D9;
 
 .logout .modal-body button,
 .delete .modal-body button {
-    font-family: Inter-Bold;
+    font-family: var(--font-inter);
+    font-weight: 600;
     font-size: 16px !important;
 }
 
@@ -943,7 +955,8 @@ background-color: #D9D9D9;
 
 .delete .modal-body span,
 .delete .modal-body h4 {
-    font-family: Inter-Bold;
+    font-family: var(--font-inter);
+    font-weight: 600;
 }
 
 .delete .modal-body p {
@@ -963,7 +976,7 @@ background-color: #D9D9D9;
 
     .delete .modal-body button {
         padding: 5px 30px !important;
-        font-family: Inter;
+        font-family: var(--font-inter);
     }
 
     .delete .modal-body img {

@@ -1,11 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ReviewResume from './CreateResume';
-import ViewPackage from './ViewPackage';
-import Faq from './faq';
-import HowWorks from './HowWorks';
-import Career from './Career';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports to reduce initial bundle size
+const ReviewResume = dynamic(() => import('./CreateResume'));
+const ViewPackage = dynamic(() => import('./ViewPackage'));
+const Faq = dynamic(() => import('./faq'));
+const HowWorks = dynamic(() => import('./HowWorks'));
+const Career = dynamic(() => import('./Career'));
+
 import Loader from '@/Layout/Loader';
 import { utm } from '@/services/utm/Index';
 // import "@/styles/Home.css";

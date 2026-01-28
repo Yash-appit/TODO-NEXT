@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ats from "@/assets/Images/Home/check-your-ats-score-analysis.webp";
 import TiltedCard from '@/components/Animation/TiltedCard';
-import * as mammoth from 'mammoth';
+// import * as mammoth from 'mammoth'; // Dynamic import used instead
 import ToastMessage from '@/Layout/ToastMessage';
 import ATSMeter from '@/components/ATSMeter/ATSMeter';
 import {
@@ -14,14 +14,20 @@ import {
 } from '@mui/material';
 import { MdExpandMore } from "react-icons/md";
 import { TbCloudUpload } from "react-icons/tb";
-import Lottie from 'lottie-react';
-import resloader from '@/Animations/res-load.json';
+// import Lottie from 'lottie-react';
+// import resloader from '@/Animations/res-load.json';
+import dynamic from 'next/dynamic';
 import Login from '@/components/Login';
 import CustomModal from '@/components/Modal/Modal';
 import { trackEvent } from '@/config/AnalyticsTracker';
 import { useDashboard } from '@/hooks/useDashboard';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+
+const UploadLoader = dynamic(() => import('./UploadLoader'), {
+  ssr: false,
+  loading: () => <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div>
+});
 
 // Define types
 interface ScoreDetails {
@@ -187,6 +193,7 @@ const ATSScore: React.FC = () => {
   const generateDOCXThumbnail = async (file: File): Promise<{ thumbnail: string; content: string }> => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const mammoth = await import('mammoth');
       const result = await mammoth.convertToHtml({ arrayBuffer });
 
       // Create a temporary div with better styling
@@ -737,12 +744,7 @@ const ATSScore: React.FC = () => {
                           transition: 'opacity 0.3s ease-in'
                         }}>
                           <div className="text-center">
-                            <Lottie
-                              className="lottie"
-                              animationData={resloader}
-                              loop
-                              autoplay
-                            />
+                            <UploadLoader />
                           </div>
                         </div>
                       )}
@@ -785,12 +787,7 @@ const ATSScore: React.FC = () => {
                       transition: 'opacity 0.3s ease-in'
                     }}>
                       <div className="text-center">
-                        <Lottie
-                          className="lottie"
-                          animationData={resloader}
-                          loop
-                          autoplay
-                        />
+                        <UploadLoader />
                       </div>
                     </div>
 

@@ -235,9 +235,9 @@ const Accountdetails = () => {
                         <div className='pic-upload d-flex align-items-center justify-content-between w-100'>
                             <div className='d-flex align-items-center position-relative'>
                                 {!uploadImage || uploadImage === "null" &&
-                                    <Image src={prof} alt="" loading="lazy" />
+                                    <Image src={prof.src} alt="" loading="lazy" />
                                 }
-                                {uploadImage === "null" ? null : <img src={uploadImage || prof} alt="Cropped Preview" loading="lazy" className="mt-2" />}
+                                {uploadImage === "null" ? null : <img src={uploadImage || prof.src} alt="Cropped Preview" loading="lazy" className="mt-2" />}
                                 <h4 className='p-2 pt-3'>{Name}</h4>
                             </div>
 
