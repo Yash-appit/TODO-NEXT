@@ -257,8 +257,6 @@ const SelectTemplates = ({ step3, setStep3, step4, setStep4, Generate }: SelectT
                                         opacity: loadedImages.has(temp.id) ? 1 : 0,
                                         transition: 'opacity 0.3s ease-in',
                                         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                        width: '100%',
-                                        height: 'auto'
                                     }}
                                 />
                             </label>

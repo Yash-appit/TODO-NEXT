@@ -554,7 +554,7 @@ const UpdatedResume: React.FC = () => {
                           <div className="preview my-element" data-aos="fade-up" data-aos-delay="100">
                             <br />
                             <p className='text-start'>
-                              <p>{resume?.resume_name || "Untitled"}</p>
+                              <span>{resume?.resume_name || "Untitled"}</span><br/>
                               {new Date(resume.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',

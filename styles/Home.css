@@ -756,12 +756,12 @@
 
 .package-faq .any {
   font-size: 32px !important;
-  font-family: Inter-bold !important;
+    font-family: Inter-Bold !important;
 }
 
 .package-faq .ques h4 {
   color: #0A5941;
-  font-family: Inter-bold;
+   font-family: Inter-Bold;
   font-size: 32px;
 }
 
@@ -1036,7 +1036,7 @@
 }
 
 .ats-score .upload p {
-  font-family: Inter-bold;
+  font-family: Inter-Bold;
   margin: 25px 0;
 }
 

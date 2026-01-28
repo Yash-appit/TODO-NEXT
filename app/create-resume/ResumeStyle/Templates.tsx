@@ -180,9 +180,7 @@ const Templates = ({ save, setStep1, setStep2, setShowModal }: TemplatesProps) =
                                 style={{
                                     opacity: loadedImages.has(temp.id) ? 1 : 0,
                                     transition: 'opacity 0.3s ease-in',
-                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                    width: '100%',
-                                    height: 'auto'
+                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
                                 }}
                             />
                             {/* <p className='text-white'>{temp.id}</p> */}
