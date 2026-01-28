@@ -44,7 +44,7 @@
 
 @font-face {
   font-family: Arial-Bold;
-  src: url("../assets/Fonts/Arial-bold.ttf") format("truetype");
+  src: url("../assets/Fonts/Arial-bold.TTF") format("truetype");
   font-display: swap;
   font-weight: 700;
 }
