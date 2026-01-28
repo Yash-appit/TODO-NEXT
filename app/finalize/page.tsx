@@ -1,13 +1,9 @@
-'use client';
-
-import dynamic from 'next/dynamic';
 import React from 'react';
-
-const Finalize = dynamic(() => import('./Finalize'), { ssr: false });
+import FinalizeWrapper from './FinalizeWrapper';
 
 const Page = () => {
   return (
-    <Finalize />
+    <FinalizeWrapper />
   )
 }
 
