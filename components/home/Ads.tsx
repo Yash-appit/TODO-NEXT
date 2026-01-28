@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// import { useResume } from '../../context/ResumeContext';
+import Script from 'next/script';
 
 // Define types for the package data
 interface PackageData {
@@ -23,41 +23,11 @@ const getFromLocalStorage = (key: string) => {
 };
 
 const Ads: React.FC = () => {
-  // const { dashboard } = useResume() as ResumeContextType;
   const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
-  
-  // Check if user doesn't have an active package
-  // const shouldShowAds = dashboard?.packageData?.package_status !== "active";
-   const packageData = getFromLocalStorage("package");
-   const shouldShowAds = packageData !== "true";
 
-  useEffect(() => {
-    if (shouldShowAds && !scriptLoaded) {
-      // Check if the script is already in the document
-      const existingScript = document.querySelector('script[src*="pagead2.googlesyndication.com"]');
-      
-      if (!existingScript) {
-        // Load the Google AdSense script
-        const script = document.createElement('script');
-        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4949029990361775';
-        script.async = true;
-        script.setAttribute('crossorigin', 'anonymous');
-        document.head.appendChild(script);
-        
-        script.onload = () => {
-          setScriptLoaded(true);
-        };
-        
-        script.onerror = () => {
-          console.error('Failed to load AdSense script');
-          setScriptLoaded(false);
-        };
-      } else {
-        // If script already exists, just mark as loaded
-        setScriptLoaded(true);
-      }
-    }
-  }, [shouldShowAds, scriptLoaded]);
+  // Check if user doesn't have an active package
+  const packageData = getFromLocalStorage("package");
+  const shouldShowAds = packageData !== "true";
 
   // Initialize ads after component mounts and script is loaded
   useEffect(() => {
@@ -65,6 +35,7 @@ const Ads: React.FC = () => {
       // Use a small delay to ensure the ad container is rendered
       const timer = setTimeout(() => {
         try {
+          // Check if adsbygoogle is loaded and push the ad
           if ((window as any).adsbygoogle) {
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
           }
@@ -72,28 +43,42 @@ const Ads: React.FC = () => {
           console.log('Error initializing ads:', error);
         }
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [scriptLoaded, shouldShowAds]);
 
+  if (!shouldShowAds) return null;
+
   // Always show the ad container
-  return (<>
-    {shouldShowAds &&
-    <div className='text-center py-3'>
-      <ins 
-        className="adsbygoogle"
-        style={{ 
-          display: 'block',
+  return (
+    <>
+      <Script
+        id="adsense-script"
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4949029990361775"
+        crossOrigin="anonymous"
+        strategy="lazyOnload"
+        onLoad={() => setScriptLoaded(true)}
+        onError={(e) => {
+          console.error('Script failed to load', e);
+          setScriptLoaded(false);
         }}
-        data-ad-client="ca-pub-4949029990361775"
-        data-ad-slot="3989436532"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      ></ins>
-    </div>
-}
-</> );
+      />
+      <div className='text-center py-3'>
+        <ins
+          className="adsbygoogle"
+          style={{
+            display: 'block',
+          }}
+          data-ad-client="ca-pub-4949029990361775"
+          data-ad-slot="3989436532"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+      </div>
+    </>
+  );
 };
 
 export default Ads;

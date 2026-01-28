@@ -534,7 +534,7 @@ const UpdatedResume: React.FC = () => {
                           width={350}
                           height={280}
                           unoptimized
-                          style={{ width: '100%', height: 'auto' }}
+                          // style={{ width: '100%', height: 'auto' }}
                         />
                         <GaugeChart value={resume.resume_completion} />
                         {hoveredResume === resume.resume_id && (
